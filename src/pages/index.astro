@@ -1,17 +1,98 @@
 ---
+import { getCollection } from 'astro:content';
 
+// 1. Buscando os dados usando o novo sistema do Astro v6
+const todasCategorias = await getCollection('categoria');
+const todosPosts = await getCollection('post');
+
+const activarAnuncios = true; 
+const corFundo = "#f4f4f5"; 
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Portal de Notícias</title>
+    <style define:vars={{ corFundo }}>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--corFundo);
+            margin: 0;
+            padding: 20px;
+            color: #111827;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .secao-categoria { margin-bottom: 40px; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .titulo-categoria { font-size: 1.5rem; border-bottom: 3px solid #3b82f6; padding-bottom: 5px; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .grid-noticias { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .grid-noticias { grid-template-columns: 2fr 1fr; } }
+        .post-destaque img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
+        .post-destaque h3 { font-size: 1.8rem; margin: 12px 0 8px 0; }
+        .lista-lateral { display: flex; flex-direction: column; gap: 15px; }
+        .item-miniatura { display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; }
+        .item-miniatura img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        .item-miniatura h4 { margin: 0; font-size: 1rem; line-height: 1.3; }
+        .bloco-propaganda { background: #f3f4f6; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; height: 250px; border-radius: 6px; color: #6b7280; font-weight: bold; }
+        
+        /* Aviso de site vazio */
+        .aviso-vazio { text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        {todasCategorias.length === 0 && (
+            <div class="aviso-vazio">
+                <h1>O seu portal está online! 🚀</h1>
+                <p>Vá ao painel de administração para cadastrar a sua primeira categoria e publicação.</p>
+                <a href="/admin/index.html" style="color: #3b82f6; font-weight: bold;">Aceder ao Painel Admin</a>
+            </div>
+        )}
+
+        {todasCategorias.map((cat) => {
+            const postsDaCategoria = todosPosts.filter(post => post.data.categoria === cat.id || post.data.categoria?.id === cat.id);
+            
+            if (postsDaCategoria.length === 0) return null;
+
+            const postDestaque = postsDaCategoria[0];
+            const postsLista = postsDaCategoria.slice(1, 4);
+
+            return (
+                <section class="secao-categoria">
+                    <h2 class="titulo-categoria">{cat.data.title}</h2>
+                    
+                    <div class="grid-noticias">
+                        <article class="post-destaque">
+                            <img src={postDestaque.data.imagemDestaque} alt={postDestaque.data.altText} />
+                            <h3>{postDestaque.data.title}</h3>
+                            <p style="color: #4b5563;">{postDestaque.data.metaDescription}</p>
+                        </article>
+
+                        <div class="coluna-lateral">
+                            {postsDaCategoria.length === 1 ? (
+                                activarAnuncios && (
+                                    <div class="bloco-propaganda">
+                                        <span>ÁREA DE PROPAGANDA LATERAL</span>
+                                    </div>
+                                )
+                            ) : (
+                                <div class="lista-lateral">
+                                    {postsLista.map((post) => (
+                                        <a href={`/posts/${post.id}`} class="item-miniatura">
+                                            <img src={post.data.imagemDestaque} alt={post.data.altText} />
+                                            <h4>{post.data.title}</h4>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            );
+        })}
+    </div>
+
+</body>
 </html>

@@ -1,5 +1,4 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 
-// https://astro.build/config
+// Configuração limpa e padrão do Astro
 export default defineConfig({});
