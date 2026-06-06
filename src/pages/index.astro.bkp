@@ -1,0 +1,190 @@
+---
+import { getCollection } from 'astro:content';
+
+// 1. Buscando os dados do Astro v6
+const todasCategorias = await getCollection('categorias');
+const todosPosts = await getCollection('posts');
+
+// Ordenar posts por data ou pegar os mais recentes para o Hero (simulado pelos últimos criados)
+const postsRecentes = todosPosts.slice(0, 3);
+
+const activarAnuncios = true; 
+const corFundo = "#f4f4f5"; 
+
+// Configurações visuais provisórias (que depois colocaremos no painel do Tina)
+const urlLogo = ""; // Se você tiver uma URL de imagem, coloque aqui. Se ficar vazia, exibe o texto abaixo:
+const nomeSite = "Monte das Oliveiras"; 
+---
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{nomeSite} | Portal de Notícias</title>
+    <style define:vars={{ corFundo }}>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--corFundo);
+            margin: 0;
+            padding: 0;
+            color: #111827;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- MENU SUPERIOR & LOGO --- */
+        .header-topo { background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .header-container { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+        .logo a { font-size: 1.5rem; font-weight: 800; color: #1e3a8a; text-decoration: none; display: flex; align-items: center; }
+        .logo img { height: 45px; width: auto; object-fit: contain; }
+        .menu-navegacao { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+        .menu-navegacao a { text-decoration: none; color: #4b5563; font-weight: 600; font-size: 0.95rem; transition: color 0.2s; text-transform: uppercase; }
+        .menu-navegacao a:hover { color: #1e3a8a; }
+
+        /* --- SEÇÃO HERO (POSTS RECENTES) --- */
+        .hero-secao { background: #0f172a; color: white; padding: 40px 0; margin-bottom: 30px; }
+        .hero-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 768px) { .hero-grid { grid-template-columns: 2fr 1fr; } }
+        .hero-principal { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #1e293b; }
+        .hero-principal img, .hero-secundario img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: transform 0.3s; }
+        .hero-principal:hover img, .hero-secundario:hover img { transform: scale(1.03); }
+        .hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 20px; color: white; text-decoration: none; display: block; }
+        .hero-overlay h2 { margin: 0 0 8px 0; font-size: 1.5rem; line-height: 1.3; }
+        @media (min-width: 768px) { .hero-overlay h2 { font-size: 2rem; } }
+        .hero-lista-lateral { display: flex; flex-direction: column; gap: 15px; }
+        .hero-secundario { position: relative; border-radius: 6px; overflow: hidden; flex: 1; min-height: 150px; background: #1e293b; }
+        .hero-secundario h3 { font-size: 1.1rem; margin: 0; }
+
+        /* --- CORPO DO SITE --- */
+        .secao-categoria { margin-bottom: 40px; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .titulo-categoria { font-size: 1.3rem; border-bottom: 3px solid #1e3a8a; padding-bottom: 5px; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; }
+        .grid-noticias { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .grid-noticias { grid-template-columns: 2fr 1fr; } }
+        
+        .post-link { text-decoration: none; color: inherit; display: block; }
+        .post-destaque img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
+        .post-destaque h3 { font-size: 1.6rem; margin: 12px 0 8px 0; color: #111827; transition: color 0.2s; }
+        .post-destaque:hover h3 { color: #1e3a8a; }
+        
+        .lista-lateral { display: flex; flex-direction: column; gap: 15px; }
+        .item-miniatura { display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; }
+        .item-miniatura img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        .item-miniatura h4 { margin: 0; font-size: 1rem; line-height: 1.3; transition: color 0.2s; }
+        .item-miniatura:hover h4 { color: #1e3a8a; }
+        
+        .bloco-propaganda { background: #f8fafc; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 6px; color: #64748b; font-size: 0.85rem; font-weight: bold; text-align: center; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- MENU SUPERIOR DINÂMICO -->
+    <header class="header-topo">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="/">
+                    {urlLogo ? <img src={urlLogo} alt={nomeSite} /> : <span>{nomeSite}</span>}
+                </a>
+            </div>
+            <nav>
+                <ul class="menu-navegacao">
+                    <li><a href="/">Início</a></li>
+                    {todasCategorias.map((cat) => {
+                        const catId = String(cat.id).split('/').pop()?.replace('.json', '');
+                        return (
+                            <li><a href={`/categoria/${catId}`}>{cat.data.title}</a></li>
+                        );
+                    })}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- SEÇÃO HERO (POSTS RECENTES EM DESTAQUE VISUAL) -->
+    {postsRecentes.length > 0 && (
+        <section class="hero-secao">
+            <div class="container hero-grid">
+                <!-- Post Principal do Hero -->
+                <div class="hero-principal">
+                    <img src={postsRecentes[0].data.imagemDestaque} alt={postsRecentes[0].data.altText} />
+                    <a href={`/posts/${postsRecentes[0].id}`} class="hero-overlay">
+                        <span style="background: #3b82f6; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Recente</span>
+                        <h2>{postsRecentes[0].data.title}</h2>
+                    </a>
+                </div>
+
+                <!-- Posts Secundários do Hero -->
+                <div class="hero-lista-lateral">
+                    {postsRecentes.slice(1, 3).map((post) => (
+                        <div class="hero-secundario">
+                            <img src={post.data.imagemDestaque} alt={post.data.altText} />
+                            <a href={`/posts/${post.id}`} class="hero-overlay">
+                                <h3>{post.data.title}</h3>
+                            </a>
+                        </div>
+                    ))}
+                    {postsRecentes.length === 1 && (
+                        <div class="bloco-propaganda" style="background: #1e293b; border-color: #475569; color: #94a3b8; height: 100%;">
+                            <span>ANÚNCIO GOOGLE RESPONSIVO DE TOPO</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- LISTAGEM DE CATEGORIAS E POSTS -->
+    <div class="container">
+        {todasCategorias.map((cat) => {
+            const currentCatId = String(cat.id).split('/').pop()?.replace('.json', '').replace('.mdx', '').trim().toLowerCase();
+            
+            const postsDaCategoria = todosPosts.filter(post => {
+                const postCatRaw = post.data.categoria?.id || post.data.categoria || '';
+                const postCatId = String(postCatRaw).split('/').pop()?.replace('.json', '').replace('.mdx', '').trim().toLowerCase();
+                return postCatId === currentCatId || todasCategorias.length === 1;
+            });
+            
+            if (postsDaCategoria.length === 0) return null;
+
+            const postDestaque = postsDaCategoria[0];
+            const postsLista = postsDaCategoria.slice(1, 4);
+
+            return (
+                <section class="secao-categoria">
+                    <h2 class="titulo-categoria">{cat.data.title}</h2>
+                    
+                    <div class="grid-noticias">
+                        <!-- Post principal com Link completo para visualização -->
+                        <a href={`/posts/${postDestaque.id}`} class="post-link">
+                            <article class="post-destaque">
+                                <img src={postDestaque.data.imagemDestaque} alt={postDestaque.data.altText} />
+                                <h3>{postDestaque.data.title}</h3>
+                                <p style="color: #4b5563; line-height: 1.5;">{postDestaque.data.metaDescription}</p>
+                            </article>
+                        </a>
+
+                        <div class="coluna-lateral">
+                            {postsDaCategoria.length === 1 ? (
+                                activarAnuncios && (
+                                    <div class="bloco-propaganda">
+                                        <span>ANÚNCIO GOOGLE DISPLAY LATERAL<br/>(300x250 ou Responsivo)</span>
+                                    </div>
+                                )
+                            ) : (
+                                <div class="lista-lateral">
+                                    {postsLista.map((p) => (
+                                        <a href={`/posts/${p.id}`} class="item-miniatura">
+                                            <img src={p.data.imagemDestaque} alt={p.data.altText} />
+                                            <h4>{p.data.title}</h4>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            );
+        })}
+    </div>
+
+</body>
+</html>

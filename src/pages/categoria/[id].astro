@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+
+// 1. Gerar as rotas baseadas nas categorias existentes
+export async function getStaticPaths() {
+  const todasCategorias = await getCollection('categorias');
+  return todasCategorias.map(cat => {
+    const idLimpo = String(cat.id).split('/').pop()?.replace('.json', '');
+    return {
+      params: { id: idLimpo },
+      props: { cat },
+    };
+  });
+}
+
+const { id } = Astro.params;
+const { cat } = Astro.props;
+
+// Buscar os posts que pertencem a esta categoria específica
+const todosPosts = await getCollection('posts');
+const postsFiltrados = todosPosts.filter(post => {
+  const postCatRaw = post.data.categoria?.id || post.data.categoria || '';
+  const postCatId = String(postCatRaw).split('/').pop()?.replace('.json', '').replace('.mdx', '').trim().toLowerCase();
+  return postCatId === id?.toLowerCase();
+});
+
+const nomeSite = "Monte das Oliveiras";
+---
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categoria: {cat.data.title} | {nomeSite}</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f4f4f5; margin: 0; padding: 0; }
+        .header-topo { background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 20px 0; text-align: center; }
+        .header-topo a { font-size: 1.5rem; font-weight: 800; color: #1e3a8a; text-decoration: none; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 2rem; color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; }
+        .grid-posts { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media(min-width: 768px) { .grid-posts { grid-template-columns: repeat(2, 1fr); } }
+        .card-post { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-decoration: none; color: inherit; display: block; }
+        .card-post img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .card-corpo { padding: 20px; }
+        .card-corpo h2 { margin: 0 0 10px 0; font-size: 1.4rem; color: #111827; }
+        .card-corpo p { margin: 0; color: #4b5563; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <header class="header-topo">
+        <a href="/">{nomeSite}</a>
+    </header>
+
+    <main class="container">
+        <h1>Categoria: {cat.data.title}</h1>
+        
+        <div class="grid-posts">
+            {postsFiltrados.map(post => (
+                <a href={`/posts/${post.id}`} class="card-post">
+                    <img src={post.data.imagemDestaque} alt={post.data.altText} />
+                    <div class="card-corpo">
+                        <h2>{post.data.title}</h2>
+                        <p>{post.data.metaDescription}</p>
+                    </div>
+                </a>
+            ))}
+            {postsFiltrados.length === 0 && (
+                <p style="color: #6b7280;">Nenhuma publicação encontrada para esta categoria ainda.</p>
+            )}
+        </div>
+    </main>
+
+</body>
+</html>

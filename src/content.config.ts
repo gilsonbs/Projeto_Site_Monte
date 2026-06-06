@@ -1,18 +1,18 @@
 import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders'; // <-- CORRIGIDO AQUI!
+import { glob } from 'astro/loaders';
 
+// 1. Coleção de Categorias (Lendo os arquivos JSON)
 const categorias = defineCollection({
-  // O loader lê todos os arquivos JSON de categorias gerados pelo Tina
-  loader: glob({ pattern: '**/[^_]*.json', base: "./src/content/categorias" }),
+  loader: glob({ pattern: '*.json', base: './src/content/categorias' }),
   schema: z.object({
     title: z.string(),
     slug: z.string(),
   }),
 });
 
+// 2. Coleção de Posts (Lendo os arquivos MDX usando o loader oficial)
 const posts = defineCollection({
-  // O loader lê todos os arquivos MDX de posts gerados pelo Tina
-  loader: glob({ pattern: '**/[^_]*.mdx', base: "./src/content/posts" }),
+  loader: glob({ pattern: '*.mdx', base: './src/content/posts' }),
   schema: z.object({
     title: z.string(),
     categoria: z.any(),
@@ -24,6 +24,6 @@ const posts = defineCollection({
 });
 
 export const collections = { 
-  categoria: categorias, 
-  post: posts 
+  'categorias': categorias, 
+  'posts': posts 
 };
