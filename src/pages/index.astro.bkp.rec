@@ -1,0 +1,202 @@
+---
+import { getCollection } from 'astro:content';
+
+// 1. Buscando os dados do Astro v6
+const todasCategorias = await getCollection('categorias');
+const todosPosts = await getCollection('posts');
+
+// Pegar os posts mais recentes para o destaque superior
+const postsRecentes = todosPosts.slice(0, 3);
+
+const activarAnuncios = true; 
+const corFundo = "#f8fafc"; // Azul ardósia bem clarinho, super moderno
+
+// Configurações provisórias de identidade
+const urlLogo = ""; 
+const nomeSite = "Monte das Oliveiras"; 
+---
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{nomeSite} | Portal de Notícias</title>
+    <style define:vars={{ corFundo }}>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--corFundo);
+            margin: 0;
+            padding: 0;
+            color: #0f172a;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- MENU SUPERIOR & LOGO --- */
+        .header-topo { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e2e8f0; }
+        .header-container { display: flex; align-items: center; justify-content: space-between; height: 75px; }
+        .logo a { font-size: 1.6rem; font-weight: 800; color: #1e3a8a; text-decoration: none; display: flex; align-items: center; letter-spacing: -0.025em; }
+        .logo img { height: 50px; width: auto; object-fit: contain; }
+        .menu-navegacao { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; }
+        .menu-navegacao a { text-decoration: none; color: #475569; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+        .menu-navegacao a:hover { color: #2563eb; }
+
+        /* --- NOVO HERO PREMIUM (ESTILO REVISTA GLOBO/UOL) --- */
+        .hero-secao { padding: 30px 0; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .hero-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 992px) { .hero-grid { grid-template-columns: 1.6fr 1fr; } }
+        
+        .hero-link { position: relative; border-radius: 12px; overflow: hidden; display: block; text-decoration: none; background: #0f172a; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .hero-principal { aspect-ratio: 16/10; }
+        @media (min-width: 992px) { .hero-principal { height: 100%; } }
+        
+        .hero-link img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hero-link:hover img { transform: scale(1.04); }
+        
+        /* Gradiente sofisticado para dar leitura perfeita ao texto branco */
+        .hero-degrafe { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%); z-index: 1; }
+        
+        .hero-conteudo { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; z-index: 2; color: #ffffff; }
+        .badge-tag { background: #2563eb; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 12px; }
+        .hero-conteudo h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+        @media (min-width: 768px) { .hero-conteudo h2 { font-size: 2.2rem; } }
+        .hero-conteudo p { margin: 0; color: #cbd5e1; font-size: 0.95rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .hero-lateral-lista { display: flex; flex-direction: column; gap: 20px; }
+        .hero-secundario { aspect-ratio: 16/7; min-height: 160px; }
+        .hero-secundario h3 { margin: 0; font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
+
+        /* --- CORPO DO SITE / CATEGORIAS --- */
+        .secao-categoria { margin-top: 40px; margin-bottom: 40px; background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+        .titulo-categoria { font-size: 1.25rem; border-left: 4px solid #2563eb; padding-left: 12px; margin-top: 0; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; font-weight: 800; }
+        .grid-noticias { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 768px) { .grid-noticias { grid-template-columns: 2fr 1fr; } }
+        
+        .post-link { text-decoration: none; color: inherit; display: block; }
+        .post-destaque img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .post-destaque h3 { font-size: 1.5rem; margin: 16px 0 10px 0; color: #0f172a; font-weight: 700; line-height: 1.3; transition: color 0.2s; }
+        .post-destaque:hover h3 { color: #2563eb; }
+        
+        .lista-lateral { display: flex; flex-direction: column; gap: 20px; }
+        .item-miniatura { display: flex; gap: 16px; align-items: center; text-decoration: none; color: inherit; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; }
+        .item-miniatura:last-child { border-bottom: none; padding-bottom: 0; }
+        .item-miniatura img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+        .item-miniatura h4 { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.4; color: #1e293b; transition: color 0.2s; }
+        .item-miniatura:hover h4 { color: #2563eb; }
+        
+        /* GUARDA-CORPO DOS ANÚNCIOS DO GOOGLE ADSENSE (PREVINE QUEBRA DE LAYOUT) */
+        .container-adsense-lateral { width: 100%; min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; overflow: hidden; }
+        .ads-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <header class="header-topo">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="/">
+                    {urlLogo ? <img src={urlLogo} alt={nomeSite} /> : <span>{nomeSite}</span>}
+                </a>
+            </div>
+            <nav>
+                <ul class="menu-navegacao">
+                    <li><a href="/">Início</a></li>
+                    {todasCategorias.map((cat) => {
+                        const catId = String(cat.id).split('/').pop()?.replace('.json', '');
+                        return (
+                            <li><a href={`/categoria/${catId}`}>{cat.data.title}</a></li>
+                        );
+                    })}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    {postsRecentes.length > 0 && (
+        <section class="hero-secao">
+            <div class="container hero-grid">
+                <a href={`/posts/${postsRecentes[0].id}`} class="hero-link hero-principal">
+                    <img src={postsRecentes[0].data.imagemDestaque} alt={postsRecentes[0].data.altText} />
+                    <div class="hero-degrafe"></div>
+                    <div class="hero-conteudo">
+                        <span class="badge-tag">Destaque</span>
+                        <h2>{postsRecentes[0].data.title}</h2>
+                        <p>{postsRecentes[0].data.metaDescription}</p>
+                    </div>
+                </a>
+
+                <div class="hero-lateral-lista">
+                    {postsRecentes.slice(1, 3).map((post) => (
+                        <a href={`/posts/${post.id}`} class="hero-link hero-secundario">
+                            <img src={post.data.imagemDestaque} alt={post.data.altText} />
+                            <div class="hero-degrafe"></div>
+                            <div class="hero-conteudo">
+                                <h3>{post.data.title}</h3>
+                            </div>
+                        </a>
+                    ))}
+                    {postsRecentes.length === 1 && (
+                        <div class="container-adsense-lateral" style="height: 100%;">
+                            <span class="ads-label">Publicidade</span>
+                            </div>
+                    )}
+                </div>
+            </div>
+        </section>
+    )}
+
+    <div class="container">
+        {todasCategorias.map((cat) => {
+            const currentCatId = String(cat.id).split('/').pop()?.replace('.json', '').replace('.mdx', '').trim().toLowerCase();
+            
+            const postsDaCategoria = todosPosts.filter(post => {
+                const postCatRaw = post.data.categoria?.id || post.data.categoria || '';
+                const postCatId = String(postCatRaw).split('/').pop()?.replace('.json', '').replace('.mdx', '').trim().toLowerCase();
+                return postCatId === currentCatId || todasCategorias.length === 1;
+            });
+            
+            if (postsDaCategoria.length === 0) return null;
+
+            const postDestaque = postsDaCategoria[0];
+            const postsLista = postsDaCategoria.slice(1, 4);
+
+            return (
+                <section class="secao-categoria">
+                    <h2 class="titulo-categoria">{cat.data.title}</h2>
+                    
+                    <div class="grid-noticias">
+                        <a href={`/posts/${postDestaque.id}`} class="post-link">
+                            <article class="post-destaque">
+                                <img src={postDestaque.data.imagemDestaque} alt={postDestaque.data.altText} />
+                                <h3>{postDestaque.data.title}</h3>
+                                <p style="color: #475569; line-height: 1.5; font-size: 0.95rem; margin: 0;">{postDestaque.data.metaDescription}</p>
+                            </article>
+                        </a>
+
+                        <div class="coluna-lateral">
+                            {postsDaCategoria.length === 1 ? (
+                                activarAnuncios && (
+                                    <div class="container-adsense-lateral">
+                                        <span class="ads-label">Publicidade</span>
+                                        <div style="color: #94a3b8; font-size: 0.8rem;">Bloco de Exibição Quadrado / Responsivo</div>
+                                    </div>
+                                )
+                            ) : (
+                                <div class="lista-lateral">
+                                    {postsLista.map((p) => (
+                                        <a href={`/posts/${p.id}`} class="item-miniatura">
+                                            <img src={p.data.imagemDestaque} alt={p.data.altText} />
+                                            <h4>{p.data.title}</h4>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            );
+        })}
+    </div>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection, render, getEntry } from 'astro:content';
 
-// 1. Gerar os caminhos para todos os posts existentes
+// 1. ESSENCIAL: Gera os caminhos para o Astro encontrar os posts
 export async function getStaticPaths() {
   const todosPosts = await getCollection('posts');
   return todosPosts.map(post => ({
@@ -11,10 +11,18 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-// O método 'render' é o padrão do Astro v6 para extrair o conteúdo do MDX
 const { Content } = await render(post);
 
-const nomeSite = "Monte das Oliveiras";
+// Busca as configurações globais do painel
+const configEntry = await getEntry('configuracoes', 'index');
+const config = configEntry?.data || {};
+
+const nomeSite = config.nomeSite || "Monte das Oliveiras";
+const urlLogo = config.logoUrl || "";
+const activarAnuncios = config.activarAnuncios || false;
+const slotLateral = config.googleSlotLateral || "";
+
+const corFundo = "#f8fafc"; 
 ---
 
 <!DOCTYPE html>
@@ -22,38 +30,134 @@ const nomeSite = "Monte das Oliveiras";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{post.data.title} | {nomeSite}</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background-color: #f4f4f5; margin: 0; padding: 0; color: #111827; }
-        .header-topo { background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 20px 0; text-align: center; }
-        .header-topo a { font-size: 1.5rem; font-weight: 800; color: #1e3a8a; text-decoration: none; }
-        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; background: white; border-radius: 8px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .voltar { display: inline-block; margin-bottom: 20px; color: #3b82f6; text-decoration: none; font-weight: bold; }
-        .imagem-destaque { width: 100%; max-height: 450px; object-fit: cover; border-radius: 8px; margin-bottom: 30px; }
-        h1 { font-size: 2.5rem; margin-top: 0; color: #111827; line-height: 1.2; }
-        .descricao { font-size: 1.2rem; color: #4b5563; line-height: 1.6; margin-bottom: 30px; border-left: 4px solid #3b82f6; padding-left: 15px; }
-        .conteudo-artigo { font-size: 1.15rem; line-height: 1.8; color: #1f2937; }
-        .conteudo-artigo p { margin-bottom: 20px; }
+    
+    <style define:vars={{ corFundo }} is:global>
+        /* RESET DE BOX-MODEL */
+        * {
+            box-sizing: border-box !important;
+        }
+
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background-color: var(--corFundo); 
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- BLINDAGEM GLOBAL DE IMAGENS --- */
+        /* Isso afeta até o que vem do Tina/MDX */
+        img, figure, picture, .conteudo-artigo img {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block !important;
+            margin: 20px auto !important;
+            border-radius: 8px;
+        }
+
+        .layout-geral {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .coluna-principal {
+            flex: 1;
+            min-width: 0; /* Impede a coluna de esticar */
+            width: 100%;
+        }
+
+        .container-artigo {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        @media (min-width: 768px) {
+            .container-artigo { padding: 50px; }
+        }
+
+        /* HEADER */
+        .header-topo { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 15px 0; text-align: center; margin-bottom: 20px; }
+        .logo-link { font-size: 1.5rem; font-weight: 800; color: #1e3a8a; text-decoration: none; }
+        .logo-img { height: 45px; width: auto; object-fit: contain; }
+
+        /* ANÚNCIOS LATERAIS */
+        .anuncio-lateral { display: none; width: 160px; flex-shrink: 0; position: sticky; top: 100px; }
+        @media (min-width: 1300px) { .anuncio-lateral { display: block; } }
+        
+        .box-adsense { 
+            width: 100%; min-height: 600px; 
+            background: #fff; border: 1px dashed #ccc; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+
+        /* CONTEÚDO */
+        .voltar { display: inline-block; margin-bottom: 25px; color: #2563eb; text-decoration: none; font-weight: 600; }
+        h1 { font-size: 2.4rem; line-height: 1.1; margin-bottom: 20px; color: #0f172a; letter-spacing: -0.02em; }
+        .conteudo-artigo { font-size: 1.15rem; line-height: 1.8; color: #1e293b; }
+        .conteudo-artigo p { margin-bottom: 25px; }
     </style>
 </head>
 <body>
 
     <header class="header-topo">
-        <a href="/">{nomeSite}</a>
+        <a href="/" class="logo-link">
+            {urlLogo ? <img src={urlLogo} alt={nomeSite} class="logo-img" /> : <span>{nomeSite}</span>}
+        </a>
     </header>
 
-    <main class="container">
-        <a href="/" class="voltar">← Voltar para o início</a>
-        <article>
-            <h1>{post.data.title}</h1>
-            <p class="descricao">{post.data.metaDescription}</p>
-            <img src={post.data.imagemDestaque} alt={post.data.altText} class="imagem-destaque" />
-            
-            <div class="conteudo-artigo">
-                <Content />
+    <div class="layout-geral">
+        
+        {activarAnuncios && (
+            <aside class="anuncio-lateral">
+                <div class="box-adsense">
+                    <span style="font-size: 10px; color: #999;">PUBLICIDADE</span>
+                    <div style="font-size: 11px; color: #cbd5e1; text-align: center; padding: 10px;">Lateral Esquerda<br>{slotLateral}</div>
+                </div>
+            </aside>
+        )}
+
+        <main class="coluna-principal">
+            <div class="container-artigo">
+                <a href="/" class="voltar">← Voltar para o portal</a>
+                
+                <article>
+                    <h1>{post.data.title}</h1>
+                    
+                    {/* Imagem de Destaque principal do post */}
+                    <img 
+                        src={post.data.imagemDestaque} 
+                        alt={post.data.altText} 
+                        style="width: 100%; aspect-ratio: 16/9; object-fit: cover;"
+                    />
+                    
+                    <div class="conteudo-artigo">
+                        <Content />
+                    </div>
+                </article>
             </div>
-        </article>
-    </main>
+        </main>
+
+        {activarAnuncios && (
+            <aside class="anuncio-lateral">
+                <div class="box-adsense">
+                    <span style="font-size: 10px; color: #999;">PUBLICIDADE</span>
+                    <div style="font-size: 11px; color: #cbd5e1; text-align: center; padding: 10px;">Lateral Direita<br>{slotLateral}</div>
+                </div>
+            </aside>
+        )}
+
+    </div>
 
 </body>
 </html>

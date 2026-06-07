@@ -54,7 +54,6 @@ export default defineConfig({
             type: "reference",
             name: "categoria",
             label: "Categoria",
-            // Mudamos de collection para collections e colocamos dentro de um array []
             collections: ["categorias"],
             required: true,
           },
@@ -80,6 +79,13 @@ export default defineConfig({
             type: "string",
             name: "altText",
             label: "Alt Text",
+            required: true,
+          },
+          {
+            type: "rich-text",
+            name: "body",
+            label: "Corpo do Post",
+            isBody: true,
             required: true,
           }
         ],
@@ -115,6 +121,11 @@ export default defineConfig({
             type: "string",
             name: "googleSlotLateral",
             label: "Google Slot Lateral",
+          },
+          {
+            type: "string",
+            name: "googleSlotHero",
+            label: "Google Slot Hero (Entre os posts)",
           }
         ],
       }

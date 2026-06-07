@@ -1,21 +1,22 @@
-import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { defineCollection, reference, z } from 'astro:content';
+import { glob, file } from 'astro/loaders';
 
-// 1. Coleção de Categorias (Lendo os arquivos JSON)
+// 1. Coleção de Categorias (JSON)
 const categorias = defineCollection({
-  loader: glob({ pattern: '*.json', base: './src/content/categorias' }),
+  loader: glob({ pattern: '**/[^_]*.json', base: "./src/content/categorias" }),
   schema: z.object({
     title: z.string(),
     slug: z.string(),
   }),
 });
 
-// 2. Coleção de Posts (Lendo os arquivos MDX usando o loader oficial)
+// 2. Coleção de Posts (MDX)
 const posts = defineCollection({
-  loader: glob({ pattern: '*.mdx', base: './src/content/posts' }),
+  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/posts" }),
   schema: z.object({
     title: z.string(),
-    categoria: z.any(),
+    // AQUI ESTAVA O ERRO: Usamos reference() importado do astro:content
+    categoria: reference('categorias'), 
     metaTitle: z.string(),
     metaDescription: z.string(),
     imagemDestaque: z.string(),
@@ -23,7 +24,18 @@ const posts = defineCollection({
   }),
 });
 
-export const collections = { 
-  'categorias': categorias, 
-  'posts': posts 
-};
+// 3. Coleção de Configurações (Arquivo Único JSON)
+const configuracoes = defineCollection({
+  // Caminho relativo à raiz do projeto
+  loader: file("src/content/configuracoes/index.json"),
+  schema: z.object({
+    nomeSite: z.string(),
+    logoUrl: z.string().optional().nullable(),
+    activarAnuncios: z.boolean().optional(),
+    googlePublisherId: z.string().optional().nullable(),
+    googleSlotLateral: z.string().optional().nullable(),
+    googleSlotHero: z.string().optional().nullable(),
+  }),
+});
+
+export const collections = { posts, categorias, configuracoes };
