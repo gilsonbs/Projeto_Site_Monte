@@ -5,11 +5,11 @@ import { getCollection, getEntry } from 'astro:content';
 const todosPosts = await getCollection('posts');
 const todasCategorias = await getCollection('categorias');
 
-// Buscando o arquivo de configurações globais (assumindo que o nome do arquivo seja 'index.json')
+// Buscando o arquivo de configurações globais
 const configEntry = await getEntry('configuracoes', 'index');
 const config = configEntry?.data || {};
 
-// Mapeando dados do Tina CMS (com fallbacks de segurança caso o painel esteja vazio)
+// Mapeando dados do Tina CMS com fallbacks de segurança
 const nomeSite = config.nomeSite || "Monte das Oliveiras";
 const urlLogo = config.logoUrl || "";
 const activarAnuncios = config.activarAnuncios || false;
@@ -29,43 +29,196 @@ const postsRecentes = todosPosts.slice(0, 3);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+    
     <title>{nomeSite} | Portal de Notícias</title>
-    <style define:vars={{ corFundo }}>
+    
+    <style define:vars={{ corFundo }} is:global>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--corFundo);
             margin: 0; padding: 0; color: #0f172a;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        
-        /* --- HEADER --- */
-        .header-topo { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e2e8f0; }
-        .header-container { display: flex; align-items: center; justify-content: space-between; height: 75px; }
-        .logo a { font-size: 1.6rem; font-weight: 800; color: #1e3a8a; text-decoration: none; display: flex; align-items: center; letter-spacing: -0.025em; }
-        .logo img { height: 50px; width: auto; object-fit: contain; }
-        .menu-navegacao { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; }
-        .menu-navegacao a { text-decoration: none; color: #475569; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; text-transform: uppercase; }
 
-        /* --- HERO PREMIUM --- */
-        .hero-secao { padding: 30px 0; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
-        .hero-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 992px) { .hero-grid { grid-template-columns: 1.6fr 1fr; } }
+        .container { 
+            max-width: 1200px;
+            margin: 0 auto; 
+            padding: 0 20px; 
+        }
         
-        .hero-link { position: relative; border-radius: 12px; overflow: hidden; display: block; text-decoration: none; background: #0f172a; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .hero-principal { aspect-ratio: 16/10; }
-        @media (min-width: 992px) { .hero-principal { height: 100%; } }
+        /* --- HEADER E IDENTIDADE VISUAL --- */
+        .header-topo { 
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid #e2e8f0;
+        }
         
-        .hero-link img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: transform 0.5s; }
-        .hero-link:hover img { transform: scale(1.04); }
-        .hero-degrafe { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%); z-index: 1; }
-        .hero-conteudo { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; z-index: 2; color: #ffffff; }
-        .badge-tag { background: #2563eb; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; display: inline-block; }
-        .hero-conteudo h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-        @media (min-width: 768px) { .hero-conteudo h2 { font-size: 2.2rem; } }
+        .header-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            height: 75px;
+        }
+
+        /* Aplicação da fonte Anton no texto do Menu/Logo */
+        .header-topo a, .logo span, .menu-navegacao a { 
+            font-family: 'Anton', sans-serif !important;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .logo a { 
+            font-size: 1.8rem; 
+            color: #1e3a8a;
+            display: flex; 
+            align-items: center; 
+        }
+
+        .logo img { 
+            height: 45px;
+            width: auto; 
+            max-width: 250px;
+            object-fit: contain; 
+            display: block;
+        }
+
+        .menu-navegacao { 
+            display: flex; 
+            gap: 24px; 
+            list-style: none;
+            margin: 0; 
+            padding: 0; 
+        }
+
+        .menu-navegacao a { 
+            color: #475569;
+            font-size: 1.1rem; 
+            transition: all 0.2s; 
+        }
         
-        .hero-lateral-lista { display: flex; flex-direction: column; gap: 15px; } /* Ajustado gap para caber o anúncio */
-        .hero-secundario { aspect-ratio: 16/7; min-height: 140px; }
-        .hero-secundario h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+        .menu-navegacao a:hover {
+            color: #2563eb;
+        }
+
+        /* --- HERO CORRIGIDO (SEM IMAGENS SOBREPOSTAS) --- */
+        .hero-secao { 
+            padding: 30px 0;
+            background: #ffffff; 
+            border-bottom: 1px solid #e2e8f0; 
+        }
+
+        .hero-grid { 
+            display: flex;
+            flex-direction: column;
+            gap: 24px; 
+            width: 100%;
+        }
+
+        @media (min-width: 992px) { 
+            .hero-grid { 
+                display: grid;
+                grid-template-columns: 1.6fr 1fr;
+            } 
+        }
+        
+        .hero-link { 
+            position: relative;
+            border-radius: 12px; 
+            overflow: hidden; 
+            display: block; 
+            text-decoration: none; 
+            background: #0f172a; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .hero-principal { 
+            aspect-ratio: 16/10;
+        }
+        
+        .hero-link img { 
+            width: 100% !important;
+            height: 100% !important; 
+            object-fit: cover !important; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            transition: transform 0.5s;
+        }
+
+        .hero-link:hover img { 
+            transform: scale(1.04);
+        }
+
+        .hero-degrafe { 
+            position: absolute; 
+            inset: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%); 
+            z-index: 1;
+        }
+
+        .hero-conteudo { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            padding: 24px;
+            z-index: 2; 
+            color: #ffffff; 
+        }
+
+        .badge-tag { 
+            background: #2563eb; 
+            color: white;
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-bottom: 12px; 
+            display: inline-block;
+        }
+
+        .hero-conteudo h2 { 
+            margin: 0 0 10px 0; 
+            font-size: 1.5rem; 
+            font-weight: 700;
+            line-height: 1.2; 
+        }
+
+        @media (min-width: 768px) { 
+            .hero-conteudo h2 { 
+                font-size: 2.2rem;
+            } 
+        }
+        
+        .hero-lateral-lista { 
+            display: flex;
+            flex-direction: column; 
+            gap: 20px; 
+        }
+
+        .hero-secundario { 
+            aspect-ratio: 16/7;
+            min-height: 140px; 
+            width: 100%;
+        }
+
+        .hero-secundario h3 { 
+            margin: 0; 
+            font-size: 1.2rem; 
+            font-weight: 700;
+        }
 
         /* --- ANÚNCIO NO MEIO DO HERO --- */
         .ad-hero-middle {
@@ -81,26 +234,136 @@ const postsRecentes = todosPosts.slice(0, 3);
         }
 
         /* --- CATEGORIAS --- */
-        .secao-categoria { margin-top: 40px; margin-bottom: 40px; background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .titulo-categoria { font-size: 1.25rem; border-left: 4px solid #2563eb; padding-left: 12px; margin-bottom: 24px; text-transform: uppercase; color: #1e3a8a; font-weight: 800; }
-        .grid-noticias { display: grid; grid-template-columns: 1fr; gap: 24px; }
-        @media (min-width: 768px) { .grid-noticias { grid-template-columns: 2fr 1fr; } }
-        
-        .post-link { text-decoration: none; color: inherit; display: block; }
-        .post-destaque img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
-        .post-destaque h3 { font-size: 1.5rem; margin: 16px 0 10px 0; font-weight: 700; }
-        
-        .item-miniatura { display: flex; gap: 16px; align-items: center; text-decoration: none; color: inherit; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; }
-        .item-miniatura img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
-        .item-miniatura h4 { margin: 0; font-size: 0.95rem; font-weight: 700; line-height: 1.4; }
+        .secao-categoria { 
+            margin-top: 40px;
+            margin-bottom: 40px; 
+            background: #ffffff; 
+            padding: 24px; 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0;
+        }
 
-        /* --- ESTRUTURA DE ANÚNCIOS LATERAIS --- */
-        .layout-com-anuncios { display: flex; justify-content: center; align-items: flex-start; gap: 20px; max-width: 1600px; margin: 0 auto; }
-        .conteudo-principal-portal { flex: 1; max-width: 1200px; min-width: 0; }
-        .anuncio-lateral-fixo { display: none; width: 160px; position: sticky; top: 95px; z-index: 50; }
-        @media (min-width: 1400px) { .anuncio-lateral-fixo { display: block; } }
-        .container-adsense-vertical { width: 100%; min-height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; }
-        .ads-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
+        .titulo-categoria { 
+            font-family: 'Anton', sans-serif !important;
+            font-size: 1.5rem; 
+            border-left: 4px solid #2563eb; 
+            padding-left: 12px; 
+            margin-bottom: 24px;
+            text-transform: uppercase; 
+            color: #1e3a8a; 
+        }
+
+        .grid-noticias { 
+            display: grid; 
+            grid-template-columns: 1fr;
+            gap: 24px; 
+        }
+
+        @media (min-width: 768px) { 
+            .grid-noticias { 
+                grid-template-columns: 2fr 1fr;
+            } 
+        }
+        
+        .post-link { 
+            text-decoration: none;
+            color: inherit; 
+            display: block; 
+        }
+
+        .post-destaque img { 
+            width: 100%; 
+            aspect-ratio: 16/9;
+            object-fit: cover; 
+            border-radius: 8px; 
+        }
+
+        .post-destaque h3 { 
+            font-size: 1.5rem;
+            margin: 16px 0 10px 0; 
+            font-weight: 700; 
+        }
+        
+        .lista-lateral {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .item-miniatura { 
+            display: flex;
+            gap: 16px; 
+            align-items: center; 
+            text-decoration: none; 
+            color: inherit; 
+            border-bottom: 1px solid #f1f5f9; 
+            padding-bottom: 16px;
+        }
+
+        .item-miniatura img { 
+            width: 80px; 
+            height: 80px; 
+            object-fit: cover; 
+            border-radius: 8px;
+            flex-shrink: 0; 
+        }
+
+        .item-miniatura h4 { 
+            margin: 0; 
+            font-size: 0.95rem; 
+            font-weight: 700;
+            line-height: 1.4; 
+        }
+
+        /* --- PORTAL AD LAYOUT --- */
+        .layout-com-anuncios { 
+            display: flex;
+            justify-content: center; 
+            align-items: flex-start; 
+            gap: 20px; 
+            max-width: 1600px; 
+            margin: 0 auto;
+        }
+
+        .conteudo-principal-portal { 
+            flex: 1; 
+            max-width: 1200px; 
+            min-width: 0;
+        }
+
+        .anuncio-lateral-fixo { 
+            display: none; 
+            width: 160px; 
+            position: sticky; 
+            top: 95px; 
+            z-index: 50;
+        }
+
+        @media (min-width: 1400px) { 
+            .anuncio-lateral-fixo { 
+                display: block;
+            } 
+        }
+
+        .container-adsense-vertical { 
+            width: 100%; 
+            min-height: 600px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            background: #ffffff; 
+            border: 1px dashed #cbd5e1; 
+            border-radius: 8px;
+        }
+
+        .ads-label { 
+            font-size: 0.6rem; 
+            color: #94a3b8; 
+            text-transform: uppercase; 
+            margin-bottom: 4px; 
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -140,6 +403,8 @@ const postsRecentes = todosPosts.slice(0, 3);
             {postsRecentes.length > 0 && (
                 <section class="hero-secao">
                     <div class="container hero-grid">
+                        
+                        {/* Post Principal Grande */}
                         <a href={`/posts/${postsRecentes[0].id}`} class="hero-link hero-principal">
                             <img src={postsRecentes[0].data.imagemDestaque} alt={postsRecentes[0].data.altText} />
                             <div class="hero-degrafe"></div>
@@ -150,8 +415,9 @@ const postsRecentes = todosPosts.slice(0, 3);
                             </div>
                         </a>
 
+                        {/* Coluna Lateral de Posts Secundários */}
                         <div class="hero-lateral-lista">
-                            {/* Primeiro post secundário */}
+                            
                             {postsRecentes[1] && (
                                 <a href={`/posts/${postsRecentes[1].id}`} class="hero-link hero-secundario">
                                     <img src={postsRecentes[1].data.imagemDestaque} alt={postsRecentes[1].data.altText} />
@@ -172,7 +438,6 @@ const postsRecentes = todosPosts.slice(0, 3);
                                 </div>
                             )}
 
-                            {/* Segundo post secundário */}
                             {postsRecentes[2] && (
                                 <a href={`/posts/${postsRecentes[2].id}`} class="hero-link hero-secundario">
                                     <img src={postsRecentes[2].data.imagemDestaque} alt={postsRecentes[2].data.altText} />
@@ -197,11 +462,12 @@ const postsRecentes = todosPosts.slice(0, 3);
                     });
                     
                     if (postsDaCategoria.length === 0) return null;
-
+                    
                     return (
                         <section class="secao-categoria">
                             <h2 class="titulo-categoria">{cat.data.title}</h2>
                             <div class="grid-noticias">
+                                
                                 <a href={`/posts/${postsDaCategoria[0].id}`} class="post-link">
                                     <article class="post-destaque">
                                         <img src={postsDaCategoria[0].data.imagemDestaque} />
@@ -209,6 +475,7 @@ const postsRecentes = todosPosts.slice(0, 3);
                                         <p style="color: #475569; font-size: 0.9rem;">{postsDaCategoria[0].data.metaDescription}</p>
                                     </article>
                                 </a>
+                                
                                 <div class="lista-lateral">
                                     {postsDaCategoria.slice(1, 4).map((p) => (
                                         <a href={`/posts/${p.id}`} class="item-miniatura">
